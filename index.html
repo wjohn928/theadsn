@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADSN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========== RESET & BASE ========== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 16px; }
+    body {
+      background: #0a0a0a;
+      color: #ffffff;
+      font-family: 'Space Mono', monospace;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; display: block; }
+
+    /* ========== COLOR PALETTE ========== */
+    :root {
+      --red: #DC2626;
+      --dark-red: #991B1B;
+      --blue: #1E3A5F;
+      --bright-blue: #2563EB;
+      --light-blue: #3B82F6;
+      --accent-blue: #93C5FD;
+      --white: #F8FAFC;
+      --cream: #F1F5F9;
+      --dark: #0a0a0a;
+      --dark-surface: #111111;
+      --dark-card: #1a1a1a;
+      --subscribe-bg: #1E3A5F;
+      --follow-bg: #DC2626;
+    }
+
+    /* ========== NEWSLETTER POPUP OVERLAY ========== */
+    .newsletter-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      transition: opacity 0.3s ease;
+    }
+    .newsletter-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .newsletter-overlay .logo-small {
+      margin-bottom: 1rem;
+    }
+    .newsletter-overlay .logo-small .logo-squares {
+      width: 40px;
+      margin: 0 auto;
+    }
+    .newsletter-overlay h2 {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 900;
+      font-size: 3rem;
+      text-align: center;
+      line-height: 1.05;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .newsletter-overlay p {
+      text-align: center;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #999;
+      max-width: 400px;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    .newsletter-overlay .email-form {
+      display: flex;
+      max-width: 480px;
+      width: 90%;
+    }
+    .newsletter-overlay .email-form input {
+      flex: 1;
+      padding: 1rem 1.2rem;
+      background: #222;
+      border: none;
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+    .newsletter-overlay .email-form input::placeholder {
+      color: #666;
+      text-transform: uppercase;
+    }
+    .newsletter-overlay .email-form button {
+      padding: 1rem 1.5rem;
+      background: var(--red);
+      color: #fff;
+      border: none;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .newsletter-overlay .email-form button:hover {
+      background: var(--dark-red);
+    }
+    .newsletter-overlay .dismiss {
+      margin-top: 2rem;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #555;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .newsletter-overlay .dismiss:hover {
+      color: #999;
+    }
+
+    /* ========== MAIN LAYOUT ========== */
+    .main-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ========== VIDEO SECTION ========== */
+    .video-section {
+      flex: 1;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .video-section .video-wrapper {
+      width: 100%;
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+    }
+    .video-section .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .video-placeholder {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #0c0c1a 0%, #111827 50%, #0f172a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .video-placeholder .play-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--red);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-placeholder .play-icon::after {
+      content: '';
+      display: block;
+      width: 0;
+      height: 0;
+      border-left: 28px solid #fff;
+      border-top: 16px solid transparent;
+      border-bottom: 16px solid transparent;
+      margin-left: 6px;
+    }
+    .video-placeholder span {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #666;
+    }
+
+    /* ========== SIDEBAR ========== */
+    .sidebar {
+      width: 420px;
+      min-width: 420px;
+      background: var(--dark);
+      border-left: 3px solid #222;
+      overflow-y: auto;
+      max-height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    /* Logo Area */
+    .sidebar-logo {
+      padding: 2rem 1.5rem 1rem;
+      text-align: center;
+      position: relative;
+    }
+    .logo-squares {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+    .logo-squares span {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+    .logo-squares span:nth-child(1) { background: #DC2626; }
+    .logo-squares span:nth-child(2) { background: #EF4444; }
+    .logo-squares span:nth-child(3) { background: #F8FAFC; }
+    .logo-squares span:nth-child(4) { background: #93C5FD; }
+    .logo-squares span:nth-child(5) { background: #3B82F6; }
+    .logo-squares span:nth-child(6) { background: #1E3A5F; }
+    .logo-name {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 900;
+      font-size: 3.5rem;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+    .status-badge {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #666;
+    }
+    .status-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #555;
+    }
+    .status-badge.live .dot {
+      background: var(--red);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ========== SECTION HEADINGS ========== */
+    .section-heading {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 900;
+      font-size: 2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      padding: 1.2rem 1.5rem 0.8rem;
+    }
+
+    /* ========== SUBSCRIBE ICONS ========== */
+    .subscribe-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 0 1.5rem 1rem;
+    }
+    .subscribe-grid a {
+      aspect-ratio: 1;
+      background: #2563EB;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .subscribe-grid a:hover {
+      transform: scale(1.05);
+      background: #3B82F6;
+    }
+    .subscribe-grid a svg {
+      width: 40%;
+      height: 40%;
+      fill: #fff;
+    }
+
+    /* ========== FOLLOW ICONS ========== */
+    .follow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 0 1.5rem 1rem;
+    }
+    .follow-grid a {
+      aspect-ratio: 1;
+      background: var(--follow-bg);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .follow-grid a:hover {
+      transform: scale(1.05);
+      background: var(--dark-red);
+    }
+    .follow-grid a svg {
+      width: 40%;
+      height: 40%;
+      fill: #fff;
+    }
+
+    /* ========== EMAIL FORM (sidebar) ========== */
+    .sidebar-email-section {
+      padding: 0 1.5rem 1.5rem;
+    }
+    .sidebar-email-form {
+      display: flex;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .sidebar-email-form input {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      background: #222;
+      border: none;
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+    .sidebar-email-form input::placeholder {
+      color: #555;
+      text-transform: uppercase;
+    }
+    .sidebar-email-form button {
+      padding: 0.8rem 1rem;
+      background: var(--red);
+      color: #fff;
+      border: none;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .sidebar-email-form button:hover {
+      background: var(--dark-red);
+    }
+
+    /* ========== SPONSORS ========== */
+    .sponsors-section {
+      padding: 0 1.5rem 1.5rem;
+    }
+    .sponsor-main {
+      background: #CBD5E1;
+      border-radius: 6px;
+      padding: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+      min-height: 70px;
+    }
+    .sponsor-main span {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 900;
+      font-size: 1.8rem;
+      color: #1E293B;
+      text-transform: uppercase;
+    }
+    .sponsor-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .sponsor-row a {
+      background: #222;
+      border-radius: 6px;
+      padding: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: background 0.2s;
+    }
+    .sponsor-row a:hover {
+      background: #2a2a2a;
+    }
+
+    /* ========== HOST CARDS ========== */
+    .host-section {
+      padding: 0 1.5rem 1.5rem;
+    }
+    .host-card {
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .host-card:nth-child(1) .host-card-inner {
+      background: #DC2626;
+    }
+    .host-card:nth-child(2) .host-card-inner {
+      background: #1E3A5F;
+    }
+    .host-card-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      min-height: 140px;
+    }
+    .host-card .host-info {
+      flex: 1;
+    }
+    .host-card .host-name-large {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 900;
+      font-size: 3rem;
+      text-transform: uppercase;
+      line-height: 0.9;
+    }
+    .host-card .host-number {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 900;
+      font-size: 4rem;
+      line-height: 1;
+      opacity: 0.3;
+    }
+    .host-card .host-label {
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      writing-mode: vertical-rl;
+      position: absolute;
+      left: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.4);
+    }
+    .host-card .host-label-right {
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      writing-mode: vertical-rl;
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.4);
+    }
+    .host-card .host-photo {
+      width: 100px;
+      height: 100px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      overflow: hidden;
+    }
+    .host-card .adsn-badge {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 900;
+      font-size: 0.9rem;
+      opacity: 0.5;
+      letter-spacing: 0.1em;
+    }
+    .host-socials {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+    .host-card:nth-child(1) .host-socials a {
+      background: #991B1B;
+    }
+    .host-card:nth-child(2) .host-socials a {
+      background: #2563EB;
+    }
+    .host-socials a {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0 0 4px 4px;
+      transition: opacity 0.15s;
+    }
+    .host-socials a:hover {
+      opacity: 0.8;
+    }
+    .host-socials a svg {
+      width: 35%;
+      height: 35%;
+      fill: #fff;
+    }
+
+    /* ========== BRANDING FOOTER ========== */
+    .branding-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 0 1.5rem 1rem;
+    }
+    .brand-block {
+      border-radius: 6px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+    }
+    .brand-block:nth-child(1) {
+      background: #DC2626;
+    }
+    .brand-block:nth-child(2) {
+      background: #1E3A5F;
+    }
+    .brand-block span {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 900;
+      font-size: 1.6rem;
+      letter-spacing: 0.05em;
+    }
+    .brand-block .brand-full {
+      font-size: 0.65rem;
+      text-align: center;
+      line-height: 1.8;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* ========== DISCLAIMER ========== */
+    .disclaimer {
+      padding: 1.5rem;
+      border-top: 1px solid #222;
+    }
+    .disclaimer h3 {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 900;
+      font-size: 1.6rem;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+    }
+    .disclaimer p {
+      font-size: 0.65rem;
+      line-height: 1.8;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .disclaimer a {
+      color: var(--accent-blue);
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 1024px) {
+      .main-layout {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        min-width: unset;
+        max-height: unset;
+        position: static;
+        border-left: none;
+        border-top: 3px solid #222;
+      }
+      .video-section .video-wrapper {
+        padding-bottom: 56.25%;
+      }
+    }
+    @media (max-width: 600px) {
+      .subscribe-grid, .follow-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .host-card .host-name-large {
+        font-size: 2rem;
+      }
+      .host-card .host-number {
+        font-size: 2.5rem;
+      }
+      .section-heading {
+        font-size: 1.5rem;
+      }
+      .logo-name {
+        font-size: 2.5rem;
+      }
+      .newsletter-overlay h2 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== NEWSLETTER POPUP ========== -->
+  <div class="newsletter-overlay" id="newsletterOverlay">
+    <div class="logo-small">
+      <div class="logo-squares">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+    <h2>Subscribe to<br>ADSN's Free<br>Newsletter</h2>
+    <p>Get the latest episodes, exclusive interviews, and subscriber-only content delivered to your inbox</p>
+    <form class="email-form" onsubmit="return false;">
+      <input type="email" placeholder="Name@email.com">
+      <button type="submit">Subscribe</button>
+    </form>
+    <div class="dismiss" onclick="document.getElementById('newsletterOverlay').classList.add('hidden')">
+      No thanks, I never miss a show ›
+    </div>
+  </div>
+
+  <!-- ========== MAIN LAYOUT ========== -->
+  <div class="main-layout">
+
+    <!-- Video Section -->
+    <div class="video-section">
+      <div class="video-wrapper">
+        <!-- Replace the placeholder below with your YouTube embed -->
+        <!-- Example: <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe> -->
+        <div class="video-placeholder">
+          <div class="play-icon"></div>
+          <span>Your latest episode here</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- Logo -->
+      <div class="sidebar-logo">
+        <div class="logo-squares">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="logo-name">ADSN</div>
+        <div class="status-badge">
+          <div class="dot"></div>
+          Offline
+        </div>
+      </div>
+
+      <!-- Subscribe -->
+      <h2 class="section-heading">Subscribe</h2>
+      <div class="subscribe-grid">
+        <a href="https://www.youtube.com/@theadsn" title="YouTube" aria-label="YouTube">
+          <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </a>
+        <a href="https://podcasts.apple.com/us/podcast/adsn/id1685124657" title="Apple Podcasts" aria-label="Apple Podcasts">
+          <svg viewBox="0 0 24 24"><path d="M5.34 0A5.328 5.328 0 0 0 0 5.34v13.32A5.328 5.328 0 0 0 5.34 24h13.32A5.328 5.328 0 0 0 24 18.66V5.34A5.328 5.328 0 0 0 18.66 0H5.34zm6.525 2.568c4.988 0 8.93 3.667 9.122 8.37l.007.33c0 2.28-.79 4.481-2.135 6.15-.236.293-.68.076-.623-.283.146-.908.166-1.86-.012-2.818a.308.308 0 0 0-.093-.17c-1.322-1.323-2.157-3.067-2.345-4.954a.306.306 0 0 0-.203-.26c-1.073-.401-2.236-.568-3.523-.31a.306.306 0 0 0-.222.168c-.818 1.59-.95 3.36-.468 5.037a.306.306 0 0 0 .093.146c.64.57 1.165 1.263 1.525 2.065.063.14.043.29-.024.412-.502.905-1.168 1.607-2.102 2.08-.3.152-.613-.128-.504-.442.438-1.258.563-2.396.258-3.755a.31.31 0 0 0-.112-.183c-1.373-1.14-2.283-2.78-2.505-4.603a.306.306 0 0 0-.12-.21C6.11 8.023 5.298 6.221 5.298 4.295c0-.047.002-.093.005-.14C5.93 3.04 7.553 2.568 11.865 2.568zM12 6.789a3.084 3.084 0 1 0 0 6.168 3.084 3.084 0 0 0 0-6.168zm0 1.543a1.541 1.541 0 1 1 0 3.082 1.541 1.541 0 0 1 0-3.082z"/></svg>
+        </a>
+        <a href="https://open.spotify.com/show/3JyftL7aNBc7Q5axOdIaov" title="Spotify" aria-label="Spotify">
+          <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+        </a>
+      </div>
+
+      <!-- Follow -->
+      <h2 class="section-heading">Follow</h2>
+      <div class="follow-grid">
+        <a href="https://x.com/the_adsn" title="X / Twitter" aria-label="X / Twitter">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/adsnonig/" title="Instagram" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/company/theadsn" title="LinkedIn" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+      </div>
+
+      <!-- Email Signup -->
+      <h2 class="section-heading">Get ADSN Delivered</h2>
+      <div class="sidebar-email-section">
+        <form class="sidebar-email-form" onsubmit="return false;">
+          <input type="email" placeholder="Name@email.com">
+          <button type="submit">Subscribe</button>
+        </form>
+      </div>
+
+      <!-- Sponsors -->
+      <h2 class="section-heading">Made Possible By</h2>
+      <div class="sponsors-section">
+        <a href="https://www.roku.com" class="sponsor-main" style="background:#6C3DAF;">
+          <span style="color:#fff; font-size:2.2rem; letter-spacing:0.08em;">ROKU</span>
+        </a>
+        <div class="sponsor-row" style="grid-template-columns: 1fr;">
+          <a href="https://www.beehiiv.com" style="padding:0; overflow:hidden;">
+            <img src="images/beehiiv-logo.jpg" alt="beehiiv" style="width:100%; height:60px; object-fit:cover; border-radius:6px;">
+          </a>
+        </div>
+      </div>
+
+      <!-- Host Cards -->
+      <div class="host-section">
+        <!-- Host 1 - James Borow -->
+        <div class="host-card">
+          <h2 class="section-heading" style="padding-left:0;">James</h2>
+          <div class="host-card-inner">
+            <span class="host-label">ADSN &bull; TEAM</span>
+            <div class="host-info">
+              <div class="host-name-large">BO<br>ROW</div>
+              <div class="host-number">01</div>
+              <div class="adsn-badge">ADSN</div>
+            </div>
+            <div class="host-photo">
+              <img src="images/james-borow.jpg" alt="James Borow" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <span class="host-label-right">ADSN &bull; TEAM</span>
+          </div>
+          <div class="host-socials">
+            <a href="https://x.com/JamesBorow" aria-label="X"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg></a>
+            <a href="https://www.linkedin.com/in/jamesborow/" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+          </div>
+        </div>
+
+        <!-- Host 2 - Daniel Druger -->
+        <div class="host-card">
+          <h2 class="section-heading" style="padding-left:0;">Daniel</h2>
+          <div class="host-card-inner">
+            <span class="host-label">ADSN &bull; TEAM</span>
+            <div class="host-info">
+              <div class="host-name-large">DRU<br>GER</div>
+              <div class="host-number">02</div>
+              <div class="adsn-badge">ADSN</div>
+            </div>
+            <div class="host-photo">
+              <img src="images/daniel-druger.jpg" alt="Daniel Druger" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <span class="host-label-right">ADSN &bull; TEAM</span>
+          </div>
+          <div class="host-socials">
+            <a href="https://x.com/DanielDruger" aria-label="X"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+            <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg></a>
+            <a href="https://www.linkedin.com/in/danieldruger/" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Branding Blocks -->
+      <div class="branding-row">
+        <div class="brand-block">
+          <span>ADSN</span>
+        </div>
+        <div class="brand-block">
+          <div class="brand-full">
+            The<br>ADSN<br>Network
+          </div>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="disclaimer">
+        <h3>Disclaimer</h3>
+        <p>
+          TheADSN.com — Your podcast network. For inquiries, contact
+          <a href="mailto:hello@theadsn.com">hello@theadsn.com</a>
+        </p>
+      </div>
+
+    </div><!-- end sidebar -->
+  </div><!-- end main-layout -->
+
+</body>
+</html>
