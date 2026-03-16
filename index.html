@@ -216,7 +216,7 @@
       width: 420px;
       min-width: 420px;
       background: var(--dark);
-      border-left: 3px solid #222;
+      border-right: 3px solid #222;
       overflow-y: auto;
       max-height: 100vh;
       position: sticky;
@@ -602,8 +602,8 @@
         min-width: unset;
         max-height: unset;
         position: static;
-        border-left: none;
-        border-top: 3px solid #222;
+        border-right: none;
+        border-bottom: 3px solid #222;
       }
       .video-section .video-wrapper {
         padding-bottom: 56.25%;
@@ -654,13 +654,6 @@
   <!-- ========== MAIN LAYOUT ========== -->
   <div class="main-layout">
 
-    <!-- Video Section -->
-    <div class="video-section">
-      <div class="video-wrapper">
-        <iframe id="ytPlayer" src="https://www.youtube.com/embed/videoseries?list=UUzjdJt8Z0W657e_afeyxAxQ&autoplay=0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-      </div>
-    </div>
-
     <!-- Sidebar -->
     <div class="sidebar">
 
@@ -670,10 +663,6 @@
           <span></span><span></span><span></span><span></span><span></span><span></span>
         </div>
         <div class="logo-name">ADSN</div>
-        <div class="status-badge">
-          <div class="dot"></div>
-          Offline
-        </div>
       </div>
 
       <!-- Subscribe -->
@@ -796,6 +785,14 @@
       </div>
 
     </div><!-- end sidebar -->
+
+    <!-- Video Section -->
+    <div class="video-section">
+      <div class="video-wrapper">
+        <iframe id="ytPlayer" src="https://www.youtube.com/embed/videoseries?list=UUzjdJt8Z0W657e_afeyxAxQ&autoplay=0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+      </div>
+    </div>
+
   </div><!-- end main-layout -->
 
   <script>
