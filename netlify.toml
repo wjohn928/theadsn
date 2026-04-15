@@ -1,3 +1,28 @@
 [build]
   publish = "."
   functions = "netlify/functions"
+
+# Redirect beehiiv newsletter routes to beehiiv's hosting
+[[redirects]]
+  from = "/p/*"
+  to = "https://theadsn.beehiiv.com/p/:splat"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/subscribe"
+  to = "https://theadsn.beehiiv.com/subscribe"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/unsubscribe"
+  to = "https://theadsn.beehiiv.com/unsubscribe"
+  status = 302
+  force = true
+
+[[redirects]]
+  from = "/confirm"
+  to = "https://theadsn.beehiiv.com/confirm"
+  status = 302
+  force = true
