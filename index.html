@@ -798,6 +798,7 @@
 
   </div><!-- end main-layout -->
 
+  <iframe name="beehiiv-submit" style="display:none;"></iframe>
   <script>
     function handleSubscribe(form, e) {
       e.preventDefault();
@@ -810,47 +811,39 @@
       btn.textContent = '...';
       emailInput.disabled = true;
 
-      fetch('https://corsproxy.io/?' + encodeURIComponent('https://api.beehiiv.com/v2/publications/pub_c21bffdf-e7d0-4cef-b666-a86b8d538e4c/subscriptions'), {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer oPJkG7A8tHatrPFPg5b908hmmzF3RXgI5acR1qWIIuur4nFk2vPlMFEOe2DT8g66',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: email,
-          send_welcome_email: true,
-          utm_source: 'theadsn.com',
-          referring_site: 'https://theadsn.com'
-        })
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        if (data.data && data.data.id) {
-          btn.textContent = 'Subscribed!';
-          btn.style.background = '#16a34a';
-          emailInput.value = '';
-          if (form.closest('.newsletter-overlay')) {
-            setTimeout(function() {
-              document.getElementById('newsletterOverlay').classList.add('hidden');
-            }, 1500);
-          }
-        } else {
-          btn.textContent = 'Error';
-          btn.style.background = '#b91c1c';
+      // Submit to beehiiv via hidden form in iframe (bypasses CORS)
+      var f = document.createElement('form');
+      f.method = 'POST';
+      f.action = 'https://adsn.beehiiv.com/create';
+      f.target = 'beehiiv-submit';
+      f.style.display = 'none';
+      var fields = {email: email, sent_from_orchid: 'true', utm_source: 'theadsn.com', referring_site: 'https://theadsn.com'};
+      for (var k in fields) {
+        var inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = k; inp.value = fields[k];
+        f.appendChild(inp);
+      }
+      document.body.appendChild(f);
+      f.submit();
+      document.body.removeChild(f);
+
+      // Show success after short delay (form submits in background iframe)
+      setTimeout(function() {
+        btn.textContent = 'Subscribed!';
+        btn.style.background = '#16a34a';
+        emailInput.value = '';
+        if (form.closest('.newsletter-overlay')) {
+          setTimeout(function() {
+            document.getElementById('newsletterOverlay').classList.add('hidden');
+          }, 1500);
         }
-      })
-      .catch(function() {
-        btn.textContent = 'Error';
-        btn.style.background = '#b91c1c';
-      })
-      .finally(function() {
-        emailInput.disabled = false;
-        btn.disabled = false;
         setTimeout(function() {
+          emailInput.disabled = false;
+          btn.disabled = false;
           btn.textContent = 'Subscribe';
           btn.style.background = '';
         }, 3000);
-      });
+      }, 1000);
     }
   </script>
 
