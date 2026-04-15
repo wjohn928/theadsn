@@ -640,7 +640,9 @@
       Subscribe to<br>ADSN's Free<br>Newsletter
     </h2>
     <p>Get the latest episodes, interviews, and subscriber-only content delivered to your inbox.</p>
-    <form class="email-form" onsubmit="handleSubscribe(this, event)">
+    <form class="email-form" action="https://adsn.beehiiv.com/create" method="POST" target="_blank">
+      <input type="hidden" name="sent_from_orchid" value="true">
+      <input type="hidden" name="utm_source" value="theadsn.com">
       <input type="email" name="email" placeholder="Name@email.com" required>
       <button type="submit">Subscribe</button>
     </form>
@@ -691,7 +693,9 @@
       <!-- Email Signup -->
       <h2 class="section-heading">Get ADSN Delivered</h2>
       <div class="sidebar-email-section">
-        <form class="sidebar-email-form" onsubmit="handleSubscribe(this, event)">
+        <form class="sidebar-email-form" action="https://adsn.beehiiv.com/create" method="POST" target="_blank">
+          <input type="hidden" name="sent_from_orchid" value="true">
+          <input type="hidden" name="utm_source" value="theadsn.com">
           <input type="email" name="email" placeholder="Name@email.com" required>
           <button type="submit">Subscribe</button>
         </form>
@@ -798,64 +802,5 @@
 
   </div><!-- end main-layout -->
 
-  <!-- Hidden iframe for beehiiv form submission -->
-  <iframe name="beehiiv-frame" style="display:none;"></iframe>
-
-  <script>
-    function handleSubscribe(form, e) {
-      e.preventDefault();
-      var emailInput = form.querySelector('input[type="email"]');
-      var email = emailInput.value.trim();
-      var btn = form.querySelector('button');
-      if (!email) return;
-
-      btn.disabled = true;
-      btn.textContent = '...';
-      emailInput.disabled = true;
-
-      // Create a hidden form that submits to beehiiv via iframe
-      var hiddenForm = document.createElement('form');
-      hiddenForm.method = 'POST';
-      hiddenForm.action = 'https://adsn.beehiiv.com/create';
-      hiddenForm.target = 'beehiiv-frame';
-      hiddenForm.style.display = 'none';
-
-      var fields = {
-        email: email,
-        utm_source: 'theadsn.com',
-        referring_site: 'https://theadsn.com',
-        sent_from_orchid: 'true'
-      };
-
-      for (var key in fields) {
-        var input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = fields[key];
-        hiddenForm.appendChild(input);
-      }
-
-      document.body.appendChild(hiddenForm);
-      hiddenForm.submit();
-      document.body.removeChild(hiddenForm);
-
-      btn.textContent = 'Subscribed!';
-      btn.style.background = '#16a34a';
-      emailInput.value = '';
-
-      if (form.closest('.newsletter-overlay')) {
-        setTimeout(function() {
-          document.getElementById('newsletterOverlay').classList.add('hidden');
-        }, 1500);
-      }
-
-      setTimeout(function() {
-        emailInput.disabled = false;
-        btn.disabled = false;
-        btn.textContent = 'Subscribe';
-        btn.style.background = '';
-      }, 3000);
-    }
-  </script>
 </body>
 </html>
